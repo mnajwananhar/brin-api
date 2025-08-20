@@ -200,6 +200,57 @@ app.delete('/api/clear-data', async (req, res) => {
   }
 });
 
+// Proxy endpoints for ML API to avoid CORS issues
+app.post('/api/predict', async (req, res) => {
+  try {
+    const response = await fetch('https://sentiment-4c5g.onrender.com/predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(response.status).json(errorData);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('ML API predict error:', error);
+    res.status(500).json({
+      error: 'Failed to connect to ML API'
+    });
+  }
+});
+
+app.post('/api/batch_predict', async (req, res) => {
+  try {
+    const response = await fetch('https://sentiment-4c5g.onrender.com/batch_predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(response.status).json(errorData);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('ML API batch_predict error:', error);
+    res.status(500).json({
+      error: 'Failed to connect to ML API'
+    });
+  }
+});
+
 app.use((err, req, res) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
