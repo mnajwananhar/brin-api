@@ -15,7 +15,7 @@ import {
   getDatabaseInfo,
   initializeDatabase,
   clearAllData
-} from '../database/postgresDB.js';
+} from './postgresDB.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
