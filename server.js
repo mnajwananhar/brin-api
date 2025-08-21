@@ -311,7 +311,7 @@ app.post('/api/batch_predict', async (req, res) => {
   }
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
     success: false,
