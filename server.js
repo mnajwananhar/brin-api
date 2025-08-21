@@ -27,7 +27,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? ['https://your-vercel-app.vercel.app'] // Replace with your actual Vercel URL
+      ? ['https://brin-six.vercel.app'] // Your actual Vercel URL
       : ['http://localhost:5173', 'http://localhost:3000'],
     methods: ['GET', 'POST'],
     credentials: true
@@ -37,9 +37,11 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-vercel-app.vercel.app'] // Replace with your actual Vercel URL
+    ? ['https://brin-six.vercel.app'] // Your actual Vercel URL
     : ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
