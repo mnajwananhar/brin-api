@@ -3,8 +3,6 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 
 // Load environment variables
 dotenv.config();
@@ -23,16 +21,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://brin-six.vercel.app'] // Your actual Vercel URL
-      : ['http://localhost:5173', 'http://localhost:3000'],
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
@@ -44,43 +32,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-
-// Socket.IO connection handler
-io.on('connection', (socket) => {
-  console.log('🔗 Client connected:', socket.id);
-  
-  socket.on('disconnect', () => {
-    console.log('🔗 Client disconnected:', socket.id);
-  });
-});
-
-// Helper function to broadcast data updates
-const broadcastDataUpdate = async () => {
-  try {
-    const [stats, chartData, recentEntries, dbInfo] = await Promise.all([
-      getSentimentStats(),
-      getChartData(),
-      getRecentEntries(5),
-      getDatabaseInfo()
-    ]);
-    
-    const updateData = {
-      statistics: stats,
-      chart_data: chartData,
-      recent_entries: recentEntries,
-      database_info: {
-        total_entries: dbInfo?.total_entries || 0,
-        last_updated: dbInfo?.last_updated,
-        database_type: dbInfo?.database_type || 'PostgreSQL'
-      }
-    };
-    
-    io.emit('data-updated', updateData);
-    console.log('📡 Broadcasting data update to all clients');
-  } catch (error) {
-    console.error('Error broadcasting update:', error);
-  }
-};
 
 // Initialize PostgreSQL database
 (async () => {
@@ -142,8 +93,6 @@ app.post('/api/save-sentiment', async (req, res) => {
         getChartData()
       ]);
       
-      // Broadcast real-time update to all connected clients
-      await broadcastDataUpdate();
       
       res.json({
         success: true,
@@ -239,8 +188,6 @@ app.delete('/api/clear-data', async (req, res) => {
     const result = await clearAllData();
     
     if (result.success) {
-      // Broadcast real-time update to all connected clients
-      await broadcastDataUpdate();
       
       res.json({
         success: true,
@@ -328,9 +275,8 @@ app.use('*', (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`🚀 Database API server running on http://localhost:${PORT}`);
-  console.log('🔌 Socket.IO enabled for real-time updates');
   console.log('📍 Available endpoints:');
   console.log(`   GET  http://localhost:${PORT}/api/health`);
   console.log(`   POST http://localhost:${PORT}/api/save-sentiment`);
