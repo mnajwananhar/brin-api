@@ -221,7 +221,14 @@ app.post('/api/predict', async (req, res) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // Handle non-JSON responses (like "Too Many Requests" plain text)
+        const textData = await response.text();
+        errorData = { error: textData || 'Unknown error occurred' };
+      }
       return res.status(response.status).json(errorData);
     }
 
@@ -246,7 +253,14 @@ app.post('/api/batch_predict', async (req, res) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // Handle non-JSON responses (like "Too Many Requests" plain text)
+        const textData = await response.text();
+        errorData = { error: textData || 'Unknown error occurred' };
+      }
       return res.status(response.status).json(errorData);
     }
 
